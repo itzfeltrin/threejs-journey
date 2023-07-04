@@ -1,5 +1,7 @@
 import * as THREE from "three";
-import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
+import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
+import { DRACOLoader } from "three/examples/jsm/loaders/DRACOLoader";
+import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import * as lil from "lil-gui";
 
 THREE.ColorManagement.enabled = false;
@@ -9,6 +11,30 @@ THREE.ColorManagement.enabled = false;
  */
 // Debug
 const gui = new lil.GUI();
+
+/**
+ * Loaders
+ */
+const dracoLoader = new DRACOLoader();
+dracoLoader.setDecoderPath("/draco/");
+const gltfLoader = new GLTFLoader();
+gltfLoader.dracoLoader = dracoLoader;
+
+// gltfLoader.load("/models/Duck/glTF/Duck.gltf", (gltf) => {
+// gltfLoader.load("/models/Duck/glTF-Binary/Duck.glb", (gltf) => {
+// gltfLoader.load("/models/Duck/glTF-Embedded/Duck.gltf", (gltf) => {
+gltfLoader.load("/models/Duck/glTF-Draco/Duck.gltf", (gltf) => {
+  scene.add(gltf.scene.children[0]);
+});
+
+// gltfLoader.load("/models/FlightHelmet/glTF/FlightHelmet.gltf", (gltf) => {
+// while (gltf.scene.children.length > 0) {
+//   gltf.scene.children[0].scale.set(10, 10, 10);
+//   scene.add(gltf.scene.children[0]);
+// }
+
+// scene.add(gltf.scene);
+// });
 
 // Canvas
 const canvas = document.querySelector("canvas.webgl");
