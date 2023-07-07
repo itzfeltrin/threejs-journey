@@ -18,7 +18,7 @@ const gui = new lil.GUI();
 const dracoLoader = new DRACOLoader();
 dracoLoader.setDecoderPath("/draco/");
 const gltfLoader = new GLTFLoader();
-gltfLoader.dracoLoader = dracoLoader;
+gltfLoader.setDRACOLoader(dracoLoader);
 
 // gltfLoader.load("/models/Duck/glTF/Duck.gltf", (gltf) => {
 // gltfLoader.load("/models/Duck/glTF-Binary/Duck.glb", (gltf) => {
