@@ -20,12 +20,28 @@ dracoLoader.setDecoderPath("/draco/");
 const gltfLoader = new GLTFLoader();
 gltfLoader.setDRACOLoader(dracoLoader);
 
+// gltfLoader.load("/models/Car/scene.gltf", (gltf) => {
+//   gltf.scene.scale.set(0.0025, 0.0025, 0.0025);
+//   scene.add(gltf.scene);
+// });
+
+let mixer = null;
+
+gltfLoader.load("/models/Fox/glTF/Fox.gltf", (gltf) => {
+  mixer = new THREE.AnimationMixer(gltf.scene);
+  const action = mixer.clipAction(gltf.animations[2]);
+  action.play();
+
+  gltf.scene.scale.set(0.025, 0.025, 0.025);
+  scene.add(gltf.scene);
+});
+
 // gltfLoader.load("/models/Duck/glTF/Duck.gltf", (gltf) => {
 // gltfLoader.load("/models/Duck/glTF-Binary/Duck.glb", (gltf) => {
 // gltfLoader.load("/models/Duck/glTF-Embedded/Duck.gltf", (gltf) => {
-gltfLoader.load("/models/Duck/glTF-Draco/Duck.gltf", (gltf) => {
-  scene.add(gltf.scene.children[0]);
-});
+// gltfLoader.load("/models/Duck/glTF-Draco/Duck.gltf", (gltf) => {
+//   scene.add(gltf.scene.children[0]);
+// });
 
 // gltfLoader.load("/models/FlightHelmet/glTF/FlightHelmet.gltf", (gltf) => {
 // while (gltf.scene.children.length > 0) {
@@ -136,6 +152,9 @@ const tick = () => {
   const elapsedTime = clock.getElapsedTime();
   const deltaTime = elapsedTime - previousTime;
   previousTime = elapsedTime;
+
+  // Update mixer
+  mixer?.update(deltaTime);
 
   // Update controls
   controls.update();
