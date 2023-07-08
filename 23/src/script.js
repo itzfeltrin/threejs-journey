@@ -1,5 +1,6 @@
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
+import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
 import * as lil from "lil-gui";
 
 THREE.ColorManagement.enabled = false;
@@ -121,6 +122,20 @@ renderer.outputColorSpace = THREE.LinearSRGBColorSpace;
 renderer.setSize(sizes.width, sizes.height);
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 
+const gltfLoader = new GLTFLoader();
+const duck = await new Promise((resolve) => {
+  gltfLoader.load("/models/Duck/glTF-Binary/Duck.glb", (gltf) => {
+    resolve(gltf);
+  });
+});
+duck.scene.position.y = -1.2;
+scene.add(duck.scene);
+
+const ambientLight = new THREE.AmbientLight("#ffffff", 0.3);
+const directionalLight = new THREE.DirectionalLight("#ffffff", 0.7);
+directionalLight.position.set(1, 2, 3);
+scene.add(ambientLight, directionalLight);
+
 /**
  * Animate
  */
@@ -145,33 +160,38 @@ const tick = () => {
 
   raycaster.setFromCamera(mouse, camera);
 
-  const objectsToTest = [object1, object2, object3];
-  const intersects = raycaster.intersectObjects(objectsToTest);
-  const intersectsIds = intersects.reduce(
-    (acc, item) => ({ ...acc, [item.object.id]: true }),
-    {}
-  );
+  // const objectsToTest = [object1, object2, object3];
+  // const intersects = raycaster.intersectObjects(objectsToTest);
+  // const intersectsIds = intersects.reduce(
+  //   (acc, item) => ({ ...acc, [item.object.id]: true }),
+  //   {}
+  // );
 
-  for (const obj of objectsToTest) {
-    if (obj === clicked?.object) {
-      obj.material.color.set("#00ff00");
-    } else {
-      if (intersectsIds[obj.id]) {
-        obj.material.color.set("#0000ff");
-      } else {
-        obj.material.color.set("#ff0000");
-      }
-    }
-  }
+  // for (const obj of objectsToTest) {
+  // if (obj === clicked?.object) {
+  //   obj.material.color.set("#00ff00");
+  // } else {
+  //   if (intersectsIds[obj.id]) {
+  //     obj.material.color.set("#0000ff");
+  //   } else {
+  //     obj.material.color.set("#ff0000");
+  //   }
+  // }
+  // }
 
-  if (intersects.length) {
-    if (!currentIntersect) {
-      console.log("mouse enter");
-      currentIntersect = intersects[0];
-    }
-  } else {
-    currentIntersect = null;
-  }
+  // if (intersects.length) {
+  //   if (!currentIntersect) {
+  //     console.log("mouse enter");
+  //     currentIntersect = intersects[0];
+  //   }
+  // } else {
+  //   currentIntersect = null;
+  // }
+
+  const intersect = raycaster.intersectObject(duck.scene);
+  const scale = intersect.length ? 2 : 1;
+
+  duck.scene.scale.set(scale, scale, scale);
 
   // Update controls
   controls.update();
