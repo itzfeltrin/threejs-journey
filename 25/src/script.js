@@ -1,12 +1,22 @@
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
+import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import * as lil from "lil-gui";
+
+/**
+ * Loaders
+ */
+const gltfLoader = new GLTFLoader();
+const cubeTextureLoader = new THREE.CubeTextureLoader().setPath(
+  "/environmentMaps"
+);
 
 /**
  * Base
  */
 // Debug
 const gui = new lil.GUI();
+const global = {};
 
 // Canvas
 const canvas = document.querySelector("canvas.webgl");
@@ -15,14 +25,74 @@ const canvas = document.querySelector("canvas.webgl");
 const scene = new THREE.Scene();
 
 /**
+ * Update all materials
+ */
+const updateAllMaterials = () => {
+  scene.traverse((child) => {
+    if (child.isMesh && child.material.isMeshStandardMaterial) {
+      child.material.envMapIntensity = global.envMapIntensity;
+    }
+  });
+};
+
+/**
+ * Environment map
+ */
+// LDR (Low Dynamic Range) cube texture
+const environmentMap = cubeTextureLoader.load([
+  "/0/px.png",
+  "/0/nx.png",
+  "/0/py.png",
+  "/0/ny.png",
+  "/0/pz.png",
+  "/0/nz.png",
+]);
+
+scene.environment = environmentMap;
+scene.background = environmentMap;
+scene.backgroundBlurriness = 0.05;
+scene.backgroundIntensity = 5;
+
+gui.add(scene, "backgroundBlurriness").min(0).max(1).step(0.01);
+gui.add(scene, "backgroundIntensity").min(0).max(10).step(0.1);
+
+global.envMapIntensity = 1;
+
+gui
+  .add(global, "envMapIntensity")
+  .min(0)
+  .max(10)
+  .step(0.001)
+  .onChange(updateAllMaterials);
+
+/**
  * Torus Knot
  */
 const torusKnot = new THREE.Mesh(
   new THREE.TorusKnotGeometry(1, 0.4, 100, 16),
-  new THREE.MeshBasicMaterial()
+  new THREE.MeshStandardMaterial({
+    roughness: 0.3,
+    metalness: 1,
+    color: 0xaaaaaa,
+  })
 );
+torusKnot.material.envMap = environmentMap;
+torusKnot.position.x = -4;
 torusKnot.position.y = 4;
 scene.add(torusKnot);
+
+gui.add(torusKnot.material, "roughness").min(0).max(1).step(0.01);
+gui.add(torusKnot.material, "metalness").min(0).max(1).step(0.01);
+
+/**
+ * Models
+ */
+const flightHelmet = await gltfLoader.loadAsync(
+  "/models/FlightHelmet/glTF/FlightHelmet.gltf"
+);
+flightHelmet.scene.scale.set(10, 10, 10);
+scene.add(flightHelmet.scene);
+updateAllMaterials();
 
 /**
  * Sizes
