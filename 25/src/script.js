@@ -1,15 +1,19 @@
 import * as THREE from "three";
-import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
-import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
+import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
+import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
+import { RGBELoader } from "three/examples/jsm/loaders/RGBELoader";
+import { GroundProjectedSkybox } from "three/examples/jsm/objects/GroundProjectedSkybox";
 import * as lil from "lil-gui";
 
 /**
  * Loaders
  */
 const gltfLoader = new GLTFLoader();
-const cubeTextureLoader = new THREE.CubeTextureLoader().setPath(
-  "/environmentMaps"
-);
+// const cubeTextureLoader = new THREE.CubeTextureLoader().setPath(
+//   "/environmentMaps"
+// );
+const rgbeLoader = new RGBELoader().setPath("/environmentMaps");
+const textureLoader = new THREE.TextureLoader().setPath("/environmentMaps");
 
 /**
  * Base
@@ -39,22 +43,49 @@ const updateAllMaterials = () => {
  * Environment map
  */
 // LDR (Low Dynamic Range) cube texture
-const environmentMap = cubeTextureLoader.load([
-  "/0/px.png",
-  "/0/nx.png",
-  "/0/py.png",
-  "/0/ny.png",
-  "/0/pz.png",
-  "/0/nz.png",
-]);
+// const environmentMap = cubeTextureLoader.load([
+//   "/0/px.png",
+//   "/0/nx.png",
+//   "/0/py.png",
+//   "/0/ny.png",
+//   "/0/pz.png",
+//   "/0/nz.png",
+// ]);
 
-scene.environment = environmentMap;
+// HDR (RGBE) equirectangular
+// const environmentMap = await rgbeLoader.loadAsync("/blender-2k.hdr");
+
+// LDR equirectangular
+// const environmentMap = await textureLoader.loadAsync(
+//   "/realistic_shredded_albert_einstein_eats_a_pepperon.jpg"
+// );
+
+// Ground projected skybox
+// const environmentMap = await rgbeLoader.loadAsync("/2/2k.hdr");
+
+// Base environment map
+const environmentMap = textureLoader.load(
+  "/realistic_shredded_albert_einstein_eats_a_pepperon.jpg"
+);
+
+environmentMap.mapping = THREE.EquirectangularReflectionMapping;
+// This is needed when using jpg environtmentMap
+environmentMap.colorSpace = THREE.SRGBColorSpace;
+
+// scene.environment = environmentMap;
 scene.background = environmentMap;
 scene.backgroundBlurriness = 0.05;
 scene.backgroundIntensity = 5;
 
 gui.add(scene, "backgroundBlurriness").min(0).max(1).step(0.01);
 gui.add(scene, "backgroundIntensity").min(0).max(10).step(0.1);
+
+// const skybox = new GroundProjectedSkybox(environmentMap);
+// skybox.scale.setScalar(50);
+// scene.add(skybox);
+
+// gui.add(skybox, "radius", 1, 200, 0.1).name("skyboxRadius");
+// gui.add(skybox, "height", 1, 200, 0.1).name("skyboxHeight");
 
 global.envMapIntensity = 1;
 
