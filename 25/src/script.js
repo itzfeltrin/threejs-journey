@@ -64,14 +64,43 @@ const updateAllMaterials = () => {
 // const environmentMap = await rgbeLoader.loadAsync("/2/2k.hdr");
 
 // Base environment map
+// const environmentMap = textureLoader.load(
+//   "/realistic_shredded_albert_einstein_eats_a_pepperon.jpg"
+// );
+// environmentMap.mapping = THREE.EquirectangularReflectionMapping;
+// This is needed when using jpg environtmentMap
+// environmentMap.colorSpace = THREE.SRGBColorSpace;
+
+/**
+ * Real time environment map
+ */
 const environmentMap = textureLoader.load(
   "/realistic_shredded_albert_einstein_eats_a_pepperon.jpg"
 );
-
 environmentMap.mapping = THREE.EquirectangularReflectionMapping;
-// This is needed when using jpg environtmentMap
 environmentMap.colorSpace = THREE.SRGBColorSpace;
 
+// Holy donut
+const holyDonut = new THREE.Mesh(
+  new THREE.TorusGeometry(8, 0.5),
+  new THREE.MeshBasicMaterial({ color: new THREE.Color(10, 4, 2) })
+);
+holyDonut.position.y = 3.5;
+holyDonut.layers.enable(1);
+scene.add(holyDonut);
+
+// Cube render target
+const cubeRenderTarget = new THREE.WebGLCubeRenderTarget(256, {
+  type: THREE.HalfFloatType,
+});
+
+scene.environment = cubeRenderTarget.texture;
+
+// Cube camera
+const cubeCamera = new THREE.CubeCamera(0.1, 100, cubeRenderTarget);
+cubeCamera.layers.set(1);
+
+// Removed environment for real time enviroment map
 // scene.environment = environmentMap;
 scene.background = environmentMap;
 scene.backgroundBlurriness = 0.05;
@@ -107,7 +136,8 @@ const torusKnot = new THREE.Mesh(
     color: 0xaaaaaa,
   })
 );
-torusKnot.material.envMap = environmentMap;
+// Commented line below to work with real time environment map
+// torusKnot.material.envMap = environmentMap;
 torusKnot.position.x = -4;
 torusKnot.position.y = 4;
 scene.add(torusKnot);
@@ -181,6 +211,13 @@ const clock = new THREE.Clock();
 const tick = () => {
   // Time
   const elapsedTime = clock.getElapsedTime();
+
+  // Real time environment map
+  if (holyDonut) {
+    holyDonut.rotation.x = elapsedTime;
+
+    cubeCamera.update(renderer, scene);
+  }
 
   // Update controls
   controls.update();
