@@ -55,6 +55,38 @@ rgbeLoader.load("/environmentMaps/0/2k.hdr", (environmentMap) => {
 });
 
 /**
+ * Directional light
+ */
+const directionalLight = new THREE.DirectionalLight("#ffffff", 1);
+directionalLight.position.set(3, 7, 6);
+scene.add(directionalLight);
+
+gui
+  .add(directionalLight, "intensity")
+  .min(0)
+  .max(10)
+  .step(0.001)
+  .name("lightIntensity");
+gui
+  .add(directionalLight.position, "x")
+  .min(-10)
+  .max(10)
+  .step(0.001)
+  .name("lightX");
+gui
+  .add(directionalLight.position, "y")
+  .min(-10)
+  .max(10)
+  .step(0.001)
+  .name("lightY");
+gui
+  .add(directionalLight.position, "z")
+  .min(-10)
+  .max(10)
+  .step(0.001)
+  .name("lightZ");
+
+/**
  * Models
  */
 // Helmet
@@ -110,6 +142,7 @@ controls.enableDamping = true;
  */
 const renderer = new THREE.WebGLRenderer({
   canvas: canvas,
+  antialias: true,
 });
 renderer.setSize(sizes.width, sizes.height);
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
@@ -126,6 +159,10 @@ gui.add(renderer, "toneMapping", {
   ACESFilmic: THREE.ACESFilmicToneMapping,
 });
 gui.add(renderer, "toneMappingExposure").min(0).max(10).step(0.001);
+
+// Physically accurate lighting
+renderer.useLegacyLights = false;
+gui.add(renderer, "useLegacyLights");
 
 /**
  * Animate
