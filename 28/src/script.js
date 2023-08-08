@@ -20,6 +20,7 @@ const scene = new THREE.Scene();
  * Textures
  */
 const textureLoader = new THREE.TextureLoader();
+const flagTexture = textureLoader.load("/textures/rs2.png");
 
 /**
  * Test mesh
@@ -43,6 +44,9 @@ const material = new THREE.RawShaderMaterial({
   side: THREE.DoubleSide,
   uniforms: {
     uFrequency: { value: new THREE.Vector2(10, 5) },
+    uTime: { value: 0 },
+    uColor: { value: new THREE.Color("orange") },
+    uTexture: { value: flagTexture },
   },
 });
 
@@ -58,9 +62,11 @@ gui
   .max(20)
   .step(0.01)
   .name("frequencyY");
+gui.addColor(material.uniforms.uColor, "value");
 
 // Mesh
 const mesh = new THREE.Mesh(geometry, material);
+mesh.scale.y = 2 / 3;
 scene.add(mesh);
 
 /**
@@ -118,6 +124,9 @@ const clock = new THREE.Clock();
 
 const tick = () => {
   const elapsedTime = clock.getElapsedTime();
+
+  // Update material
+  material.uniforms.uTime.value = elapsedTime;
 
   // Update controls
   controls.update();
