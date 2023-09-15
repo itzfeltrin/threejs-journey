@@ -69,6 +69,70 @@ const material = new THREE.MeshStandardMaterial({
   normalMap: normalTexture,
 });
 
+const depthMaterial = new THREE.MeshDepthMaterial({
+  depthPacking: THREE.RGBADepthPacking,
+});
+
+const customUniforms = {
+  uTime: { value: 0 },
+};
+
+material.onBeforeCompile = (shader) => {
+  shader.uniforms.uTime = customUniforms.uTime;
+
+  shader.vertexShader = shader.vertexShader.replace(
+    "#include <common>",
+    `
+      #include <common>
+
+      uniform float uTime;
+      
+      mat2 get2dRotateMatrix(float _angle) {
+        return mat2(cos(_angle), -sin(_angle), sin(_angle), cos(_angle));
+      }
+    `
+  );
+  shader.vertexShader = shader.vertexShader.replace(
+    "#include <begin_vertex>",
+    `
+      #include <begin_vertex>
+      
+      float angle = position.y + uTime * 0.9;
+      mat2 rotateMatrix = get2dRotateMatrix(angle);
+      
+      transformed.xz = rotateMatrix * transformed.xz;
+    `
+  );
+};
+
+depthMaterial.onBeforeCompile = (shader) => {
+  shader.uniforms.uTime = customUniforms.uTime;
+
+  shader.vertexShader = shader.vertexShader.replace(
+    "#include <common>",
+    `
+      #include <common>
+
+      uniform float uTime;
+      
+      mat2 get2dRotateMatrix(float _angle) {
+        return mat2(cos(_angle), -sin(_angle), sin(_angle), cos(_angle));
+      }
+    `
+  );
+  shader.vertexShader = shader.vertexShader.replace(
+    "#include <begin_vertex>",
+    `
+      #include <begin_vertex>
+      
+      float angle = position.y + uTime * 0.9;
+      mat2 rotateMatrix = get2dRotateMatrix(angle);
+      
+      transformed.xz = rotateMatrix * transformed.xz;
+    `
+  );
+};
+
 /**
  * Models
  */
@@ -77,6 +141,7 @@ gltfLoader.load("/models/LeePerrySmith/LeePerrySmith.glb", (gltf) => {
   const mesh = gltf.scene.children[0];
   mesh.rotation.y = Math.PI * 0.5;
   mesh.material = material;
+  mesh.customDepthMaterial = depthMaterial;
   scene.add(mesh);
 
   // Update materials
@@ -155,6 +220,8 @@ const clock = new THREE.Clock();
 
 const tick = () => {
   const elapsedTime = clock.getElapsedTime();
+
+  customUniforms.uTime.value = elapsedTime;
 
   // Update controls
   controls.update();
