@@ -93,12 +93,20 @@ material.onBeforeCompile = (shader) => {
     `
   );
   shader.vertexShader = shader.vertexShader.replace(
+    "#include <beginnormal_vertex>",
+    `
+      #include <beginnormal_vertex>
+    
+      float angle = (position.y + uTime) * 0.9;
+      mat2 rotateMatrix = get2dRotateMatrix(angle);
+    
+      objectNormal.xz = rotateMatrix * objectNormal.xz;
+    `
+  );
+  shader.vertexShader = shader.vertexShader.replace(
     "#include <begin_vertex>",
     `
       #include <begin_vertex>
-      
-      float angle = position.y + uTime * 0.9;
-      mat2 rotateMatrix = get2dRotateMatrix(angle);
       
       transformed.xz = rotateMatrix * transformed.xz;
     `
@@ -125,7 +133,7 @@ depthMaterial.onBeforeCompile = (shader) => {
     `
       #include <begin_vertex>
       
-      float angle = position.y + uTime * 0.9;
+      float angle = (position.y + uTime) * 0.9;
       mat2 rotateMatrix = get2dRotateMatrix(angle);
       
       transformed.xz = rotateMatrix * transformed.xz;
